@@ -18,15 +18,28 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Set up Chrome and ChromeDriver
-        uses: nanasess/setup-chromedriver@v2
-        with:
-          chromedriver-version: 'latest'
+      - name: Set up Google Chrome
+        uses: browser-actions/setup-chrome@v1
 
-      - name: Start Chrome (headless)
+      - name: Install ChromeDriver matching installed Chrome
         run: |
-          google-chrome --version
-          chromedriver --version
+          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
+          echo "Using Chrome version $CHROME_VERSION"
+          curl -sS "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" -o versions.json
+          DRIVER_URL=$(jq -r --arg ver "$CHROME_VERSION" '.channels.Stable.downloads.chromedriver[] | select(.platform == "linux64") | .url' versions.json)
+          curl -Lo chromedriver.zip "$DRIVER_URL"
+          unzip chromedriver.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
 
       - name: Run tests
         run: mvn test
+
+      - name: Notify Slack of build result
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,job,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
