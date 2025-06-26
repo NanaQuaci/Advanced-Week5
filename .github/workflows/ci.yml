@@ -32,8 +32,15 @@ jobs:
           sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
           sudo chmod +x /usr/local/bin/chromedriver
 
-      - name: Run tests
-        run: mvn test
+      - name: Run Selenium Tests
+        run: mvn test -e -X
+
+      - name: Upload test reports if failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
 
       - name: Notify Slack of build result
         if: always()

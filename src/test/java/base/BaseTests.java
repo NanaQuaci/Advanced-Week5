@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.time.Duration;
 
@@ -12,8 +13,13 @@ public class BaseTests {
 
     @BeforeEach
     public void setUp() {
-        System.setProperty("webdriver.chrome.driver", "resources/chromedriver.exe");
-        driver = new ChromeDriver();
+        // No need for System.setProperty if chromedriver is in system PATH (CI handles this)
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new"); // use "new" headless mode (from Chrome 109+)
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+
+        driver = new ChromeDriver(options);
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     }
