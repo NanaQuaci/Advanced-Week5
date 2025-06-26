@@ -27,10 +27,9 @@ jobs:
           CHROME_MAJOR=$(echo $CHROME_VERSION | cut -d '.' -f1)
           echo "Detected Chrome version: $CHROME_VERSION (Major: $CHROME_MAJOR)"
 
-          curl -sS "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json" -o versions.json
+          curl -sS "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" -o versions.json
 
           DRIVER_URL=$(jq -r --arg ver "$CHROME_MAJOR" '
-            .channels.Stable.version as $stableVersion |
             .versions[] |
             select(.version | startswith($ver)) |
             .downloads.chromedriver[] |
