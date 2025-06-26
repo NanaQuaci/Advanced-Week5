@@ -21,29 +21,17 @@ jobs:
       - name: Set up Google Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Install ChromeDriver matching Chrome major version
+      - name: Download ChromeDriver 137 (to match Chrome 137)
         run: |
-          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
-          CHROME_MAJOR=$(echo $CHROME_VERSION | cut -d '.' -f1)
-          echo "Detected Chrome version: $CHROME_VERSION (Major: $CHROME_MAJOR)"
-
-          curl -sS "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" -o versions.json
-
-          DRIVER_URL=$(jq -r '.channels.Stable.downloads.chromedriver[] | select(.platform == "linux64") | .url' versions.json)
-
-          if [ -z "$DRIVER_URL" ]; then
-            echo "❌ Could not find a matching ChromeDriver"
-            exit 1
-          fi
-
-          echo "✅ Downloading ChromeDriver from $DRIVER_URL"
-          curl -Lo chromedriver.zip "$DRIVER_URL"
+          echo "🔧 Forcing download of ChromeDriver 137..."
+          curl -Lo chromedriver.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/137.0.7151.119/linux64/chromedriver-linux64.zip
           unzip chromedriver.zip
-          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
 
       - name: Run Selenium Tests
         run: mvn test
+
 
       - name: Upload test reports if failed
         if: failure()
