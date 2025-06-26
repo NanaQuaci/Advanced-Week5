@@ -24,9 +24,21 @@ jobs:
       - name: Install ChromeDriver matching installed Chrome
         run: |
           CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
-          echo "Using Chrome version $CHROME_VERSION"
-          curl -sS "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" -o versions.json
-          DRIVER_URL=$(jq -r --arg ver "$CHROME_VERSION" '.channels.Stable.downloads.chromedriver[] | select(.platform == "linux64") | .url' versions.json)
+          echo "Detected Chrome version: $CHROME_VERSION"
+          curl -sS "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json" -o versions.json
+          DRIVER_URL=$(jq -r --arg ver "$CHROME_VERSION" '
+            .versions[] | 
+            select(.version == $ver) | 
+            .downloads.chromedriver[] | 
+            select(.platform == "linux64") | 
+            .url' versions.json)
+
+          if [ -z "$DRIVER_URL" ]; then
+            echo "❌ Could not find a matching ChromeDriver for Chrome $CHROME_VERSION"
+            exit 1
+          fi
+
+          echo "✅ Downloading ChromeDriver from $DRIVER_URL"
           curl -Lo chromedriver.zip "$DRIVER_URL"
           unzip chromedriver.zip
           sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
