@@ -21,20 +21,24 @@ jobs:
       - name: Set up Google Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Install ChromeDriver matching installed Chrome
+      - name: Install ChromeDriver matching Chrome major version
         run: |
           CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
-          echo "Detected Chrome version: $CHROME_VERSION"
-          curl -sS "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json" -o versions.json
-          DRIVER_URL=$(jq -r --arg ver "$CHROME_VERSION" '
-            .versions[] | 
-            select(.version == $ver) | 
-            .downloads.chromedriver[] | 
-            select(.platform == "linux64") | 
-            .url' versions.json)
+          CHROME_MAJOR=$(echo $CHROME_VERSION | cut -d '.' -f1)
+          echo "Detected Chrome version: $CHROME_VERSION (Major: $CHROME_MAJOR)"
+
+          curl -sS "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json" -o versions.json
+
+          DRIVER_URL=$(jq -r --arg ver "$CHROME_MAJOR" '
+            .channels.Stable.version as $stableVersion |
+            .versions[] |
+            select(.version | startswith($ver)) |
+            .downloads.chromedriver[] |
+            select(.platform == "linux64") |
+            .url' versions.json | head -n 1)
 
           if [ -z "$DRIVER_URL" ]; then
-            echo "❌ Could not find a matching ChromeDriver for Chrome $CHROME_VERSION"
+            echo "❌ Could not find a ChromeDriver for Chrome major version $CHROME_MAJOR"
             exit 1
           fi
 
