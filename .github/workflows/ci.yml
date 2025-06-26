@@ -18,16 +18,15 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Download Chrome
-        uses: browser-actions/setup-chrome@v1
+      - name: Set up Chrome and ChromeDriver
+        uses: nanasess/setup-chromedriver@v2
+        with:
+          chromedriver-version: 'latest'
 
-      - name: Set up ChromeDriver
+      - name: Start Chrome (headless)
         run: |
-          CHROME_VERSION=$(google-chrome --version | grep -oP "\d+\.\d+\.\d+")
-          wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${CHROME_VERSION}/linux64/chromedriver-linux64.zip"
-          unzip chromedriver-linux64.zip
-          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
-          sudo chmod +x /usr/local/bin/chromedriver
+          google-chrome --version
+          chromedriver --version
 
-      - name: Run tests with Maven
+      - name: Run tests
         run: mvn test
