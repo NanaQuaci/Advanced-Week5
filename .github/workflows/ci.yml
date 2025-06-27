@@ -32,7 +32,6 @@ jobs:
       - name: Run Selenium Tests
         run: mvn test
 
-
       - name: Upload test reports if failed
         if: failure()
         uses: actions/upload-artifact@v4
@@ -40,11 +39,15 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports/
 
+  notify:
+    needs: test
+    runs-on: ubuntu-latest
+    if: always() # Always run this even if 'test' fails
+    steps:
       - name: Notify Slack of build result
-        if: always()
         uses: 8398a7/action-slack@v3
         with:
-          status: ${{ job.status }}
+          status: ${{ needs.test.result }}
           fields: repo,message,commit,author,job,took
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
