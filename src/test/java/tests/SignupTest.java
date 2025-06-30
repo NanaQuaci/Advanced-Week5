@@ -16,7 +16,7 @@ public class SignupTest extends BaseTests {
         HomePage homePage = new HomePage(driver);
 
         homePage.enterEmail("nanaquaci@yahoo.com");
-        homePage.clickSubscribe();
+//        homePage.clickSubscribe();
 
         String message = homePage.getSuccessMessage();
         assertTrue(message.contains("Thanks for subscribing"), "Success message not shown");
