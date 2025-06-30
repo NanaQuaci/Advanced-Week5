@@ -25,4 +25,12 @@ public class HomePage {
     public String getSuccessMessage() {
         return driver.findElement(successMessage).getText();
     }
+
+    public String getErrorMessage() {
+        return driver.findElement(By.id("error-message")).getText();
+    }
+
+
+
+
 }
